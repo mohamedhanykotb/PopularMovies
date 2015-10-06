@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">Popular Movies</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="trailers">TRAILERS : </string>
+    <string name="reviews">REVIEWS : </string>
+
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_detail">detail</string>
+    <string name="title_activity_settings">SettingsActivity</string>
+
+    <string name="popularity">popularity</string>
+    <string name="vote">vote_average</string>
+    <string name="favorites">favorites</string>
+
+    <string name="popularity_display">Populality</string>
+    <string name="vote_display">Vote Avrage</string>
+    <string name="favorites_display">Favorites</string>
+
+<!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+</resources>

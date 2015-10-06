@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+<resources>
+    <string-array name="pref_priority">
+        <item>@string/popularity</item>
+        <item>@string/vote</item>
+        <item>@string/favorites</item>
+    </string-array>
+
+    <string-array name="pref_priority_display">
+        <item>@string/popularity_display</item>
+        <item>@string/vote_display</item>
+        <item>@string/favorites_display</item>
+    </string-array>
+
+</resources>
