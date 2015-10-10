@@ -80,6 +80,19 @@ public class MoviesData {
         return poster_path;
     }
 
+    private String get_overview()
+            throws JSONException {
+
+        String overview ;
+
+        if(this_movie.has("overview"))
+            overview = this_movie.getString("overview");
+        else
+            overview ="";
+
+        return overview;
+    }
+
     private double get_popularity()
             throws JSONException {
         double popularity ;
@@ -120,6 +133,7 @@ public class MoviesData {
             one_movie.setPoster_path(get_poster_path());
             one_movie.setVote_avrage(get_vote_avrage());
             one_movie.setPopularity(get_popularity());
+            one_movie.setOverview(get_overview());
 
             output_movies_array.add(one_movie);
 

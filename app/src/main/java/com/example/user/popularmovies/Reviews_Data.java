@@ -1,7 +1,5 @@
 package com.example.user.popularmovies;
 
-import android.util.Log;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -35,18 +33,33 @@ public class Reviews_Data {
         return content;
     }
 
-    public ArrayList<String> get_all_contents ()
-    throws JSONException {
-        JSONObject review_opject;
-        ArrayList<String> output_reviews_array = new ArrayList<String>();
+    private String get_author(JSONObject review )
+            throws JSONException {
+        String author ;
 
+        if(review.has("author"))
+            author = review.getString("author");
+        else
+            author ="";
+
+        return author;
+    }
+
+    public ArrayList<review> get_all_contents ()
+            throws JSONException {
+        JSONObject review_opject;
+        ArrayList<review> output_reviews_array = new ArrayList<review>();
+        review one_review;
         for (int i = 0; i < all_reviews.length(); i++) {
             review_opject = all_reviews.getJSONObject(i);
+            one_review = new review();
+            one_review.setContent(get_content(review_opject));
+            one_review.setAuthor(get_author(review_opject));
 
-            output_reviews_array.add(get_content(review_opject));
-            Log.d("TAG56", output_reviews_array.get(i));
-
+            output_reviews_array.add(one_review);
         }
+
+
         return output_reviews_array;
     }
 

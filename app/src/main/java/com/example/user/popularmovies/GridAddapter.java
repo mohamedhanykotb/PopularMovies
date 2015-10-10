@@ -1,6 +1,7 @@
 package com.example.user.popularmovies;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,6 +23,7 @@ public class GridAddapter extends BaseAdapter {
 
     public GridAddapter(Context context , ArrayList<String> weak_basic_data  )
     {
+        Log.d("hehooooooooo", "getView ");
         this.context = context ;
         this.weak_basic_data = weak_basic_data ;
         inflater = LayoutInflater.from(context);
@@ -52,13 +54,8 @@ public class GridAddapter extends BaseAdapter {
         if(item_view==null)
             item_view = inflater.inflate(R.layout.grid_item , null);
 
-
         ImageView grid_image = (ImageView)item_view.findViewById(R.id.imageView);
-
         Picasso.with(context).load(weak_basic_data.get(position)).into(grid_image);
-
-
-
 
         return  item_view;
     }

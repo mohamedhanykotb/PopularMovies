@@ -12,16 +12,14 @@ This layout is a two-pane layout for the Items master/detail flow.
 -->
 
 <GridView xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/gridview"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:columnWidth="90dp"
-        android:numColumns="auto_fit"
-        android:verticalSpacing="10dp"
-        android:horizontalSpacing="10dp"
-        android:stretchMode="columnWidth"
-        android:gravity="center"
+    android:id="@+id/gridview"
+    android:layout_width="0dp"
+    android:layout_height="match_parent"
+    android:layout_weight="1"
+    android:columnWidth="90dp"
+    android:numColumns="auto_fit"
+    android:stretchMode="columnWidth"
+    android:gravity="center"
         />
 
 <FrameLayout

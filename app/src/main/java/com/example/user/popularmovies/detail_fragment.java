@@ -2,9 +2,12 @@ package com.example.user.popularmovies;
 
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -12,6 +15,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+
+import com.example.user.popularmovies.DATA.Movies_Contract;
 
 import org.json.JSONException;
 
@@ -37,8 +42,6 @@ public class detail_fragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        WeatherDataTask Weather = new WeatherDataTask();
-        Weather.execute("ca");
         arguments = getArguments();
         if (getArguments() != null) {
             mtitle = arguments.getString("title");
@@ -50,34 +53,79 @@ public class detail_fragment extends Fragment {
                              Bundle savedInstanceState) {
 
         View rootView = inflater.inflate(R.layout.detail_fragment, container, false);
-
         details_list= (ListView) rootView.findViewById(R.id.details_list);
+
+
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        String current_Priority = sharedPreferences.getString("Priority",getString(R.string.popularity));
+        if(current_Priority.equals(getString(R.string.favorites)) && arguments!=null)
+        {
+            Uri trailer_uri = Movies_Contract.TRAILERS.buildFavoritesUriById(arguments.getString("id"));
+            Cursor cr= getActivity().getContentResolver().query(trailer_uri, null , null , null ,null);
+
+            trailer one_trailer;
+            while (cr.moveToNext()) {
+                one_trailer = new trailer();
+                Log.d("get1", cr.getString(1) +" "+ cr.getString(2)+" " + cr.getString(3));
+                one_trailer.setKey(cr.getString(Movies_Contract.TRAILERS.COLUMN_KEY_INDEX));
+                one_trailer.setName(cr.getString(Movies_Contract.TRAILERS.CCOLUMN_NAME_INDEX));
+
+                trailers.add(one_trailer);
+            }
+
+            Uri review_uri = Movies_Contract.REVIEWS.buildFavoritesUriById(arguments.getString("id"));
+            cr= getActivity().getContentResolver().query(review_uri, null , null , null ,null);
+
+            ArrayList<review> reviews = new ArrayList<review>();
+            review one_review;
+            while (cr.moveToNext()) {
+                one_review = new review();
+                Log.d("get2", cr.getString(1) +" " + cr.getString(2) +" " + cr.getString(3));
+                one_review.setAuthor(cr.getString(Movies_Contract.REVIEWS.CCOLUMN_AUTHOR_INDEX));
+                one_review.setContent(cr.getString(Movies_Contract.REVIEWS.COLUMN_CONTENT_INDEX));
+
+                reviews.add(one_review);
+            }
+
+            Movie this_movie = new Movie();
+
+            this_movie.setPopularity(arguments.getDouble("pop"));
+            this_movie.setDate(arguments.getString("date"));
+            this_movie.setPoster_path(arguments.getString("image_path"));
+            this_movie.setVote_avrage(arguments.getDouble("vote"));
+            this_movie.setId(arguments.getString("id"));
+            this_movie.setTitle(arguments.getString("title"));
+            this_movie.setOverview(arguments.getString("overview"));
+
+            Trailers_Adapter trailer_adapt = new Trailers_Adapter(getActivity(), this_movie , trailers ,reviews);
+
+            details_list.setAdapter(trailer_adapt);
+
+        }
+        else if (arguments != null) {
+            WeatherDataTask Weather = new WeatherDataTask();
+            Weather.execute("ca");
+        }
 
         details_list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 String  trailer_key = trailers.get(position-1).getKey();
                 try {
-                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:" + trailer_key));
+                    Intent intent = new Intent(Intent.ACTION_VIEW,
+                        Uri.parse("http://www.youtube.com/watch?v=" + trailer_key));
                     startActivity(intent);
                 } catch (ActivityNotFoundException ex) {
-                    Intent intent = new Intent(Intent.ACTION_VIEW,
-                            Uri.parse("http://www.youtube.com/watch?v=" + trailer_key));
-                    startActivity(intent);
+                    Log.d("unfounded URL", "unfounded URL");
                 }
             }
         });
-
-
         return rootView;
     }
 
 
     public class WeatherDataTask extends AsyncTask< String, Void ,String[] > {
 
-        private String format = "json";
-        private String units = "metric";
-        private int numDays = 7;
         String forecastJsonStr = null;
 
         @Override
@@ -94,7 +142,7 @@ public class detail_fragment extends Fragment {
                 video_url = new URL(VideoUri);
 
             } catch (IOException e) {
-                Log.e("PlaceholderFragment", "Error ", e);
+
                 // If the code didn't successfully get data, there's no point in attemping
                 // to parse it.
                 return null;
@@ -167,7 +215,7 @@ private String GetJsonStr(URL url)
 
                 try {
                      Reviews_Data r_d = new Reviews_Data(result[0]);
-                    ArrayList<String> reviews_content =r_d.get_all_contents();
+                    ArrayList<review> reviews_content =r_d.get_all_contents();
 
                     VideosData trailer_data = new VideosData(result[1]);
 
@@ -181,6 +229,7 @@ private String GetJsonStr(URL url)
                     this_movie.setVote_avrage(arguments.getDouble("vote"));
                     this_movie.setId(arguments.getString("id"));
                     this_movie.setTitle(arguments.getString("title"));
+                    this_movie.setOverview(arguments.getString("overview"));
 
                     Trailers_Adapter trailer_adapt = new Trailers_Adapter(getActivity(), this_movie , trailers ,reviews_content);
 

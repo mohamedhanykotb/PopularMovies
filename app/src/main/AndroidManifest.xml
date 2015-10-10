@@ -33,6 +33,12 @@
                 />
 
         </activity>
+
+        <provider
+            android:authorities="com.example.user.popularmovies"
+            android:name=".DATA.MoviesProvider" />
+
+
     </application>
 
 </manifest>

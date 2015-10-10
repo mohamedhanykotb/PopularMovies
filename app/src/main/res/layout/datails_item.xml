@@ -5,12 +5,23 @@
     android:gravity="center_vertical"
     android:minHeight="?android:attr/listPreferredItemHeight"
     android:orientation="vertical"
-    android:padding="16dp"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#00868B"
+        android:paddingBottom="30dp"
+        android:paddingTop="30dp"
+        >
 
-    <TextView android:text="world" android:layout_width="wrap_content"
-        android:layout_height="wrap_content" android:id="@+id/title" />
+    <TextView android:text="world" android:layout_width="fill_parent"
+        android:layout_height="fill_parent" android:id="@+id/title"
+        android:textSize="@dimen/abc_text_size_title_material"
+        android:gravity="center"
+      />
+</LinearLayout>
+
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -21,20 +32,31 @@
         android:padding="16dp" >
 
 
+        <ImageView
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/loading"
+            android:id="@+id/imageView2"
+
+            />
+
 
         <LinearLayout
             android:layout_height="wrap_content"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_weight="1"
             android:orientation="vertical"
-            android:gravity="center_horizontal">
+            android:layout_marginLeft="16dp"
+            >
 
             <TextView
-                android:text="@string/hello_world"
+                android:text=""
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/textView"
-                android:layout_marginTop="30dp"
+                android:textSize="@dimen/abc_text_size_subtitle_material_toolbar"
+                android:layout_marginTop="15dp"
                 />
 
             <TextView
@@ -50,50 +72,32 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/textView3"
-                android:layout_marginTop="30dp" />
-
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/vote_image"
-                />
-
-            <TextView
-                android:text=" "
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/sammary"
-                android:layout_marginTop="30dp" />
-
-        </LinearLayout>
-        <LinearLayout
-            android:layout_height="wrap_content"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center_horizontal">>
-
-            <ImageView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:id="@+id/imageView2"
-                android:background="@drawable/icon"
-                android:scaleType="centerCrop"
-                android:layout_marginLeft="20dp"
-                android:layout_marginRight="20dp"
-                />
+                android:layout_marginTop="30dp"
+                android:layout_marginBottom="15dp"/>
 
             <Button
-                android:layout_width="match_parent"
+                style="?android:attr/buttonStyleSmall"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Star"
-                android:id="@+id/button"
-                />
+                android:id="@+id/button" />
+
+
+
         </LinearLayout>
+
 
         </LinearLayout>
 
     <TextView android:text="description" android:layout_width="wrap_content"
-        android:layout_height="wrap_content" android:id="@+id/description" />
+        android:layout_height="wrap_content" android:id="@+id/overview"
+        android:paddingLeft="16dp"
+        android:paddingRight="10dp"
+        />
+
+    <TextView android:text="@string/trailers" android:layout_width="wrap_content"
+        android:layout_height="wrap_content" android:id="@+id/trailers"
+        android:layout_marginTop="6dp"
+        android:padding="10dp"/>
 
     </LinearLayout>

@@ -4,14 +4,12 @@
     android:layout_height="match_parent">
 
     <ImageView
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@drawable/icon"
-        android:minWidth="300dp"
+        android:background="@drawable/loading"
         android:id="@+id/imageView"
-        android:scaleType="centerCrop"
-        android:padding="0dp"
-        android:layout_margin="0dp"
+        android:layout_alignParentTop="true"
+        android:scaleType="fitXY"
 
        />
 

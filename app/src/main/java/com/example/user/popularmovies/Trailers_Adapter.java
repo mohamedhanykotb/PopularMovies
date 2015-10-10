@@ -1,7 +1,9 @@
 package com.example.user.popularmovies;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -12,6 +14,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.user.popularmovies.DATA.Movies_Contract;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -21,25 +24,34 @@ import java.util.ArrayList;
  */
 public class Trailers_Adapter extends BaseAdapter {
 
-    ArrayList<trailer> trailers_data ;
-    Movie details;
-    ArrayList<String> reviews_data;
-    Context context ;
-    LayoutInflater inflater ;
+    private ArrayList<trailer> trailers_data ;
+    private Movie details;
+    private ArrayList<review> reviews_data;
+    private Context context ;
+    private LayoutInflater inflater ;
+    private int Num_trailers , Num_reviews;
 
-    public Trailers_Adapter(Context context , Movie details , ArrayList<trailer> trailers_data , ArrayList<String> reviews_data )
+    private View details_view, review_view , trailer_view ;
+
+
+    public Trailers_Adapter(Context context , Movie details , ArrayList<trailer> trailers_data , ArrayList<review> reviews_data )
     {
         this.context = context ;
         this.trailers_data = trailers_data ;
         this.details=details;
         this.reviews_data=reviews_data;
+        Num_trailers = trailers_data.size();
+        Num_reviews = reviews_data.size();
         inflater = LayoutInflater.from(context);
+        details_view = inflater.inflate(R.layout.datails_item, null);
+        review_view =  inflater.inflate(R.layout.review_list_item, null);
+        trailer_view =  inflater.inflate(R.layout.trailer_list_item, null);
     }
 
     @Override
     public int getCount ()
     {
-        return trailers_data.size()+reviews_data.size()+1;
+        return Num_trailers+Num_reviews+1;
     }
 
     @Override
@@ -60,26 +72,25 @@ public class Trailers_Adapter extends BaseAdapter {
         View rootView = convertView ;
 
         if(position==0) {
-            if (rootView == null)
+            if (rootView != inflater.inflate(R.layout.datails_item, null))
                 rootView = inflater.inflate(R.layout.datails_item, null);
 
             TextView title = (TextView)rootView.findViewById(R.id.title);
             TextView date = (TextView)rootView.findViewById(R.id.date);
             TextView pop = (TextView)rootView.findViewById(R.id.textView);
             TextView vote = (TextView)rootView.findViewById(R.id.textView3);
+            TextView overview = (TextView)rootView.findViewById(R.id.overview);
             ImageView image = (ImageView)rootView.findViewById(R.id.imageView2);
-            ImageView vote_image = (ImageView)rootView.findViewById(R.id.vote_image);
+
+
 
             title.setText(details.getTitle());
             date.setText(details.getDate());
             vote.setText(details.getVote_avrage() + "");
             pop.setText(details.getPopularity()+"");
+            overview.setText(details.getOverview());
 
-
-            //vote_image my_vote_image = new vote_image(BitmapFactory.decodeResource(getResources(), R.drawable.stars));
-            //vote_image.setImageBitmap(my_vote_image.get_image(Double.valueOf(arguments.getString("vote")), 10));
-
-             Picasso.with(context).load(details.getPoster_path()).into(image);
+            Picasso.with(context).load(details.getPoster_path()).into(image);
 
             Button StarButton = (Button)rootView.findViewById(R.id.button);
             StarButton.setOnClickListener(new Button.OnClickListener() {
@@ -88,39 +99,89 @@ public class Trailers_Adapter extends BaseAdapter {
 
                     SharedPreferences.Editor editor = fv_sh.edit();
                     String str = fv_sh.getString("favorites", ",");
-                    Log.d("TAG4", str + " 2");
+
                     StringBuilder fv = new StringBuilder(str);
                     fv.append(details.getId()).append(",");
-                    Log.d("TAG4", fv.toString());
-
                     editor.putString("favorites", fv.toString());
                     editor.commit();
 
-                    Log.d("TAG4", fv_sh.getString("favorites", ",1 "));
+                    Uri favoraits_uri = Movies_Contract.Favorites.CONTENT_URI;
+
+                    ContentValues cv = new ContentValues();
+                    cv.put(Movies_Contract.Favorites.COLUMN_DATE,details.getDate());
+                    cv.put(Movies_Contract.Favorites.COLUMN_LENGTH,"120 ");
+                    cv.put(Movies_Contract.Favorites.COLUMN_MOVIE_ID, details.getId());
+                    cv.put(Movies_Contract.Favorites.COLUMN_OVERVIEW, details.getOverview());
+                    cv.put(Movies_Contract.Favorites.COLUMN_POPULARITY,details.getPopularity());
+                    cv.put(Movies_Contract.Favorites.COLUMN_POSTER_PATH,details.getPoster_path());
+                    cv.put(Movies_Contract.Favorites.COLUMN_TITLE,details.getTitle());
+                    cv.put(Movies_Contract.Favorites.COLUMN_VOTE_AVERAGE, details.getVote_avrage());
+                    context.getContentResolver().insert(favoraits_uri, cv);
+
+                    Uri trailers_uri = Movies_Contract.TRAILERS.CONTENT_URI;
+                    for(int i=0;i<trailers_data.size();i++) {
+                        Log.d("TAG4", fv_sh.getString("favorites", i+" "));
+                        cv = new ContentValues();
+                        cv.put(Movies_Contract.TRAILERS.COLUMN_MOVIE_ID, details.getId());
+                        cv.put(Movies_Contract.TRAILERS.COLUMN_KEY, trailers_data.get(i).getKey());
+                        cv.put(Movies_Contract.TRAILERS.COLUMN_NAME, trailers_data.get(i).getName());
+
+                        context.getContentResolver().insert(trailers_uri, cv);
+                    }
+
+                    Uri reviews_uri = Movies_Contract.REVIEWS.CONTENT_URI;
+                    for(int i=0;i<reviews_data.size();i++) {
+                        cv = new ContentValues();
+                        cv.put(Movies_Contract.REVIEWS.COLUMN_MOVIE_ID, details.getId());
+                        cv.put(Movies_Contract.REVIEWS.COLUMN_AUTHOR, reviews_data.get(i).getAuthor());
+                        cv.put(Movies_Contract.REVIEWS.COLUMN_CONTENT, reviews_data.get(i).getContent());
+
+                        context.getContentResolver().insert(reviews_uri, cv);
+
+                        Log.d("TAG4", fv_sh.getString("favorites", ",1 "));
+                    }
                 }
             });
 
-            rootView.setEnabled(false);
+            if(Num_trailers<1)
+            {
+                TextView sub_title = (TextView)rootView.findViewById(R.id.trailers);
+                sub_title.setVisibility(View.GONE);
+            }
+
+
             rootView.setOnClickListener(null);
 
-        } else if(position<=trailers_data.size())
+        } else if(position<=Num_trailers)
         {
-            if (rootView == null)
+            if(rootView!=inflater.inflate(R.layout.trailer_list_item, null))
                 rootView = inflater.inflate(R.layout.trailer_list_item, null);
-            TextView trailer_name = (TextView)rootView.findViewById(R.id.name_textview);
 
-            trailer_name.setText(trailers_data.get(position-1).getName());
+            TextView trailer_name = (TextView)rootView.findViewById(R.id.name_textview);
+            trailer_name.setText(trailers_data.get(position-1).getName()+" ");
 
         }
 
-        else {
-            if (rootView == null)
+        else if (position >Num_trailers && position <=Num_trailers+Num_reviews) {
+
+            if(rootView!=inflater.inflate(R.layout.review_list_item, null))
                 rootView = inflater.inflate(R.layout.review_list_item, null);
 
-            TextView review = (TextView)rootView.findViewById(R.id.review_textview);
-            review.setText(reviews_data.get(position - trailers_data.size()-1));
+            int Inner_position = position - Num_trailers-1;
 
-            rootView.setEnabled(false);
+            TextView review = (TextView)rootView.findViewById(R.id.review_textview);
+            review.setText(reviews_data.get(Inner_position).getContent() + " ");
+
+            TextView author = (TextView)rootView.findViewById(R.id.author_textview);
+            author.setText(reviews_data.get(Inner_position).getAuthor() + " :");
+
+            if(Num_reviews!=0 && Inner_position == 0)
+            {
+                TextView sub_title = (TextView)rootView.findViewById(R.id.reviews);
+                sub_title.setVisibility(View.VISIBLE);
+            }
+
+
             rootView.setOnClickListener(null);
         }
 

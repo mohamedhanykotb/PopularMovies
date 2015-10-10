@@ -3,6 +3,7 @@ package com.example.user.popularmovies;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -17,6 +18,8 @@ import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.Toast;
+
+import com.example.user.popularmovies.DATA.Movies_Contract;
 
 import org.json.JSONException;
 
@@ -36,6 +39,8 @@ public class MainActivity extends AppCompatActivity {
     Intent intent;
     Context this_con ;
     MoviesData movies_data;
+    ArrayList<Movie> movies_data_arr;
+    ArrayList<String> posters_arr;
     String current_Priority;
     SharedPreferences sharedPreferences ;
     private static final String DETAILFRAGMENT_TAG = "DFTAG";
@@ -56,8 +61,6 @@ public class MainActivity extends AppCompatActivity {
             mTwoPane = false;
         }
 
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-
         inflater = LayoutInflater.from(this);
         View item_view = inflater.inflate(R.layout.grid_item , null);
         grid_image = (ImageView)item_view.findViewById(R.id.imageView);
@@ -66,12 +69,19 @@ public class MainActivity extends AppCompatActivity {
         my_grid = (GridView)findViewById(R.id.gridview);
 
         this_con = this;
-
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         current_Priority = sharedPreferences.getString("Priority",getString(R.string.popularity));
-        WeatherDataTask  WeatherData = new WeatherDataTask();
-        WeatherData.execute(build_uri(current_Priority));
-
-        Log.d("onCreate", current_Priority + "  " +build_uri(current_Priority));
+        if(current_Priority.equals(getString(R.string.favorites)))
+        {
+            Uri favoraits_uri = Movies_Contract.Favorites.CONTENT_URI;
+            Cursor cr= this.getContentResolver().query(favoraits_uri, null , null , null ,null);
+            getFromDpToView(cr);
+        }
+        else
+        {
+            WeatherDataTask WeatherData = new WeatherDataTask();
+            WeatherData.execute(build_uri(current_Priority));
+        }
 
         intent = new Intent(this , detail.class);
         final Context this_activity = this;
@@ -79,23 +89,22 @@ public class MainActivity extends AppCompatActivity {
         my_grid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String title = movies_data.movies_array.get(position).getTitle();
-                String movie_id = movies_data.movies_array.get(position).getId();
-                String date = movies_data.movies_array.get(position).getDate();
-                String image_path = movies_data.movies_array.get(position).getPoster_path();
-                double vote = (movies_data.movies_array.get(position).getVote_avrage());
-                double pop = (movies_data.movies_array.get(position).getPopularity());
-                int duration = Toast.LENGTH_SHORT;
-
+                String title = movies_data_arr.get(position).getTitle();
+                String movie_id = movies_data_arr.get(position).getId();
+                String date = movies_data_arr.get(position).getDate();
+                String image_path =movies_data_arr.get(position).getPoster_path();
+                String overview = movies_data_arr.get(position).getOverview();
+                double vote = (movies_data_arr.get(position).getVote_avrage());
+                double pop = (movies_data_arr.get(position).getPopularity());
 
                 Bundle args = new Bundle();
-                args.putString("title", movies_data.movies_array.get(position).getTitle());
+                args.putString("title", title);
                 args.putString("date",date);
                 args.putString("image_path",image_path);
                 args.putDouble("vote", vote);
                 args.putDouble("pop",pop);
                 args.putString("id",movie_id);
-
+                args.putString("overview",overview);
 
                 if(mTwoPane)
                 {
@@ -107,11 +116,10 @@ public class MainActivity extends AppCompatActivity {
                             .commit();
                 }
                 else {
+                    int duration = Toast.LENGTH_SHORT ;
                     Toast toast = Toast.makeText(this_activity, title, duration);
                     toast.show();
-
                     Intent intent = new Intent(this_activity, detail.class).putExtras(args);
-
                     startActivity(intent);
                 }
 
@@ -147,28 +155,31 @@ public class MainActivity extends AppCompatActivity {
     public void onStart()
     {
         super.onStart();
-        Log.d("tagq", "start");
         if (current_Priority != null)
             if(!current_Priority.equals(sharedPreferences.getString("Priority",getString(R.string.popularity)))) {
                 Log.d("onstart",current_Priority);
                 current_Priority=sharedPreferences.getString("Priority", getString(R.string.popularity));
                 Log.d("onstart",current_Priority);
-                WeatherDataTask WeatherData = new WeatherDataTask();
-                WeatherData.execute(build_uri(current_Priority));
-                Log.d("onCreate", build_uri(current_Priority));
+                if(current_Priority.equals(getString(R.string.favorites)))
+                {
+                    Uri favoraits_uri = Movies_Contract.Favorites.CONTENT_URI;
+                    Cursor cr= this.getContentResolver().query(favoraits_uri, null , null , null ,null);
+                    getFromDpToView(cr);
+                }
+                else
+                {
+                    WeatherDataTask WeatherData = new WeatherDataTask();
+                    WeatherData.execute(build_uri(current_Priority));
+                }
             }
     }
 
     private String build_uri(String piriorty)
     {
-
         final String FORECAST_BASE_URL ="http://api.themoviedb.org/3/discover/movie?";
         final String sort = "sort_by";
         final String key = "api_key";
-
         Uri builtUri;
-
-        Log.d("uri", piriorty + "  " + getString(R.string.favorites));
 
         if(piriorty.equals(getString(R.string.favorites)) ) {
             builtUri = Uri.parse(FORECAST_BASE_URL).buildUpon()
@@ -185,23 +196,41 @@ public class MainActivity extends AppCompatActivity {
         return builtUri.toString();
     }
 
-    public class WeatherDataTask extends AsyncTask< String , Void ,String > {
+    private void getFromDpToView (Cursor cr)
+    {
+        Movie one_movie;
+        posters_arr = new ArrayList<String>();
+        movies_data_arr = new ArrayList<Movie>();
 
-        private String format = "json";
-        private String units = "metric";
-        private int numDays = 7;
+        while (cr.moveToNext()) {
+            one_movie = new Movie();
+            Log.d("get" , cr.getString(0)+cr.getString(1)+cr.getString(2)+cr.getString(3)+cr.getString(4)+cr.getString(5)+cr.getString(6)  + cr.getString(7));
+            one_movie.setOverview(cr.getString(Movies_Contract.Favorites.COLUMN_OVERVIEW_INDEX));
+            one_movie.setVote_avrage(cr.getDouble(Movies_Contract.Favorites.COLUMN_VOTE_AVERAGE_INDEX));
+            one_movie.setPoster_path(cr.getString(Movies_Contract.Favorites.COLUMN_POSTER_PATH_INDEX));
+            one_movie.setPopularity(cr.getDouble(Movies_Contract.Favorites.COLUMN_POPULARITY_INDEX));
+            one_movie.setDate(cr.getString(Movies_Contract.Favorites.COLUMN_DATE_INDEX));
+            one_movie.setTitle(cr.getString(Movies_Contract.Favorites.COLUMN_TITLE_INDEX));
+            one_movie.setId(cr.getString(Movies_Contract.Favorites.COLUMN_MOVIE_ID_INDEX));
+            one_movie.setPoster_path(cr.getString(Movies_Contract.Favorites.COLUMN_POSTER_PATH_INDEX));
+
+            posters_arr.add(cr.getString(Movies_Contract.Favorites.COLUMN_POSTER_PATH_INDEX));
+
+            movies_data_arr.add(one_movie);
+        }
+        GridAddapter myadapter = new GridAddapter(this , posters_arr );
+        my_grid.setAdapter(myadapter);
+    }
+
+    public class WeatherDataTask extends AsyncTask< String , Void ,String > {
         String forecastJsonStr = null;
 
         @Override
         protected String doInBackground (String... params){
-
             HttpURLConnection urlConnection = null;
             BufferedReader reader = null;
 
-            // Will contain the raw JSON response as a string.
-
             try {
-
                 URL url = new URL(params[0]);
 
                 Log.d("tagq", "load");
@@ -272,6 +301,7 @@ public class MainActivity extends AppCompatActivity {
                         Log.d("TAG23" , fv_sh.getString("favorites", "1,"));
                     }
 
+                    movies_data_arr = movies_data.get_all_movies();
                     ArrayList<String> listdata = movies_data.get_all_posters();
                     Log.d("TAG2", listdata.size() + " ");
                     GridAddapter myadapter = new GridAddapter(this_con , listdata );

@@ -7,6 +7,7 @@ package com.example.user.popularmovies;
     private String title;
     private String date;
     private String poster_path ;
+    private String overview ;
     private String id ;
     private double popularity;
     private double vote_avrage;
@@ -24,6 +25,10 @@ package com.example.user.popularmovies;
     public void setTitle (String title)
     {
         this.title = title;
+    }
+    public void setOverview (String overview)
+    {
+        this.overview = overview;
     }
     public void setId (String id)
     {
@@ -51,6 +56,10 @@ package com.example.user.popularmovies;
     public String getTitle ()
     {
         return title;
+    }
+    public String getOverview ()
+    {
+        return overview;
     }
     public String getId ()
     {
