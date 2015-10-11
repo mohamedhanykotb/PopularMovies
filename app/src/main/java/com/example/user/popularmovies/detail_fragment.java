@@ -38,6 +38,10 @@ public class detail_fragment extends Fragment {
     ListView details_list ;
     ArrayList<trailer> trailers = new ArrayList<trailer>();
 
+    public detail_fragment()
+    {
+        setHasOptionsMenu(true);
+    }
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,10 +55,8 @@ public class detail_fragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
         View rootView = inflater.inflate(R.layout.detail_fragment, container, false);
         details_list= (ListView) rootView.findViewById(R.id.details_list);
-
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
         String current_Priority = sharedPreferences.getString("Priority",getString(R.string.popularity));
@@ -66,24 +68,19 @@ public class detail_fragment extends Fragment {
             trailer one_trailer;
             while (cr.moveToNext()) {
                 one_trailer = new trailer();
-                Log.d("get1", cr.getString(1) +" "+ cr.getString(2)+" " + cr.getString(3));
                 one_trailer.setKey(cr.getString(Movies_Contract.TRAILERS.COLUMN_KEY_INDEX));
                 one_trailer.setName(cr.getString(Movies_Contract.TRAILERS.CCOLUMN_NAME_INDEX));
-
                 trailers.add(one_trailer);
             }
 
             Uri review_uri = Movies_Contract.REVIEWS.buildFavoritesUriById(arguments.getString("id"));
             cr= getActivity().getContentResolver().query(review_uri, null , null , null ,null);
-
             ArrayList<review> reviews = new ArrayList<review>();
             review one_review;
             while (cr.moveToNext()) {
                 one_review = new review();
-                Log.d("get2", cr.getString(1) +" " + cr.getString(2) +" " + cr.getString(3));
                 one_review.setAuthor(cr.getString(Movies_Contract.REVIEWS.CCOLUMN_AUTHOR_INDEX));
                 one_review.setContent(cr.getString(Movies_Contract.REVIEWS.COLUMN_CONTENT_INDEX));
-
                 reviews.add(one_review);
             }
 
@@ -97,13 +94,13 @@ public class detail_fragment extends Fragment {
             this_movie.setTitle(arguments.getString("title"));
             this_movie.setOverview(arguments.getString("overview"));
 
-            Trailers_Adapter trailer_adapt = new Trailers_Adapter(getActivity(), this_movie , trailers ,reviews);
+            DetailsListAdapter trailer_adapt = new DetailsListAdapter(getActivity(), this_movie , trailers ,reviews);
 
             details_list.setAdapter(trailer_adapt);
 
         }
-        else if (arguments != null) {
-            WeatherDataTask Weather = new WeatherDataTask();
+        else if (arguments != null ) {
+            MoiesDataTask Weather = new MoiesDataTask();
             Weather.execute("ca");
         }
 
@@ -122,9 +119,31 @@ public class detail_fragment extends Fragment {
         });
         return rootView;
     }
+    //@Override
+    //@TargetApi(11)
+    //public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+    //    inflater.inflate(R.menu.menue_detail_fragment, menu);
+    //    MenuItem menuItem = menu.findItem(R.id.action_bar_share);
+       // createShareForecastIntent();
+        //ShareActionProvider mShareActionProvider =(ShareActionProvider) MenuItemCompat.getActionProvider(menuItem);
+        //if (mShareActionProvider != null ) {
+         //   mShareActionProvider.setShareIntent(createShareForecastIntent());
+        //} else {
+        //    Log.d("Error Sharing", "Share Action Provider is null?");
+        //}
+    //}
+    private Intent createShareForecastIntent() {
+        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
+        shareIntent.setType("text/plain");
+        if(trailers.size()>0) {
+            shareIntent.putExtra(Intent.EXTRA_TEXT, "http://www.youtube.com/watch?v=" + trailers.get(0).getKey());
+            return shareIntent;
+        }
+        return null;
+    }
 
-
-    public class WeatherDataTask extends AsyncTask< String, Void ,String[] > {
+    public class MoiesDataTask extends AsyncTask< String, Void ,String[] > {
 
         String forecastJsonStr = null;
 
@@ -142,12 +161,8 @@ public class detail_fragment extends Fragment {
                 video_url = new URL(VideoUri);
 
             } catch (IOException e) {
-
-                // If the code didn't successfully get data, there's no point in attemping
-                // to parse it.
                 return null;
             }
-
             String[] out = new String[2];
             out[0]=GetJsonStr(Review_url);
             out[1]=GetJsonStr(video_url);
@@ -173,12 +188,8 @@ private String GetJsonStr(URL url)
 
         String line;
         while ((line = reader.readLine()) != null) {
-            // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
-            // But it does make debugging a *lot* easier if you print out the completed
-            // buffer for debugging.
             buffer.append(line + "\n");
         }
-
         if (buffer.length() == 0) {
             // Stream was empty.  No point in parsing.
             return null;
@@ -187,8 +198,6 @@ private String GetJsonStr(URL url)
 
     } catch (IOException e) {
         Log.e("PlaceholderFragment", "Error ", e);
-        // If the code didn't successfully get the weather data, there's no point in attemping
-        // to parse it.
         return null;
     } finally{
         if (urlConnection != null) {
@@ -211,8 +220,6 @@ private String GetJsonStr(URL url)
         {
             if(result != null)
             {
-                Log.d("TAG6", "result");
-
                 try {
                      Reviews_Data r_d = new Reviews_Data(result[0]);
                     ArrayList<review> reviews_content =r_d.get_all_contents();
@@ -221,7 +228,7 @@ private String GetJsonStr(URL url)
 
                     trailers=trailer_data.get_all_contents();
 
-                     Movie this_movie = new Movie();
+                    Movie this_movie = new Movie();
 
                     this_movie.setPopularity(arguments.getDouble("pop"));
                     this_movie.setDate(arguments.getString("date"));
@@ -231,7 +238,7 @@ private String GetJsonStr(URL url)
                     this_movie.setTitle(arguments.getString("title"));
                     this_movie.setOverview(arguments.getString("overview"));
 
-                    Trailers_Adapter trailer_adapt = new Trailers_Adapter(getActivity(), this_movie , trailers ,reviews_content);
+                    DetailsListAdapter trailer_adapt = new DetailsListAdapter(getActivity(), this_movie , trailers ,reviews_content);
 
                     details_list.setAdapter(trailer_adapt);
 

@@ -181,6 +181,25 @@ public class MoviesProvider extends ContentProvider {
         final int match = sUriMatcher.match(uri);
         int rowsDeleted =-1;
 
+        if ( null == selection ) selection = "1";
+        switch (match) {
+            case VAVORAITS_MOVIES: {
+                rowsDeleted = db.delete(Movies_Contract.Favorites.TABLE_NAME, selection, selectionArgs);
+                break;
+            }
+            case VAVORAIT_MOVIE_WITH_MOVIE_ID: {
+                String id = uri.getPathSegments().get(1);
+                rowsDeleted = db.delete(Movies_Contract.Favorites.TABLE_NAME, TRAILERS_WITH_MOVIE_ID,new  String[]{id});
+                break;
+            }
+
+            default:
+                throw new UnsupportedOperationException("Unknown uri: " + uri);
+        }
+        if (rowsDeleted != 0) {
+            getContext().getContentResolver().notifyChange(uri, null);
+        }
+
         return rowsDeleted;
     }
 

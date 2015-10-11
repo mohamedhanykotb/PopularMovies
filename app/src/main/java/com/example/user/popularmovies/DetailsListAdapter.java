@@ -20,7 +20,7 @@ import java.util.ArrayList;
 /**
  * Created by user on 10/3/2015.
  */
-public class Trailers_Adapter extends BaseAdapter {
+public class DetailsListAdapter extends BaseAdapter {
 
     private ArrayList<trailer> trailers_data ;
     private Movie details;
@@ -32,7 +32,7 @@ public class Trailers_Adapter extends BaseAdapter {
     private View details_view, review_view , trailer_view ;
 
 
-    public Trailers_Adapter(Context context , Movie details , ArrayList<trailer> trailers_data , ArrayList<review> reviews_data )
+    public DetailsListAdapter(Context context , Movie details , ArrayList<trailer> trailers_data , ArrayList<review> reviews_data )
     {
         this.context = context ;
         this.trailers_data = trailers_data ;
@@ -91,18 +91,18 @@ public class Trailers_Adapter extends BaseAdapter {
             if(exist_in_favoraites())
                 StarButton.setText("Delet");
 
-             StarButton.setOnClickListener(new Button.OnClickListener() {
-                 public void onClick(View v) {
-                     if (exist_in_favoraites()) {
-                         Uri favoraits_uri = Movies_Contract.Favorites.buildFavoritesUriById(details.getId());
-                         context.getContentResolver().delete(favoraits_uri, null, null);
-                         StarButton.setText("Star");
-                     } else {
-                         set_in_dp();
-                         StarButton.setText("Delet");
-                     }
-                 }
-             });
+            StarButton.setOnClickListener(new Button.OnClickListener() {
+                public void onClick(View v) {
+                    if (exist_in_favoraites()) {
+                        Uri favoraits_uri = Movies_Contract.Favorites.buildFavoritesUriById(details.getId());
+                        context.getContentResolver().delete(favoraits_uri, null, null);
+                        StarButton.setText("Star");
+                    } else {
+                        set_in_dp();
+                        StarButton.setText("Delet");
+                    }
+                }
+            });
 
             if(Num_trailers<1)
             {
@@ -201,6 +201,4 @@ public class Trailers_Adapter extends BaseAdapter {
         }
     }
 }
-
-
 

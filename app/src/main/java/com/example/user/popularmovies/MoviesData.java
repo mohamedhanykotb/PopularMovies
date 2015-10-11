@@ -26,7 +26,6 @@ public class MoviesData {
         jsondata = new JSONObject(JsonStr);
         if(jsondata.has("results"))
             all_movies = jsondata.getJSONArray("results");
-       // Log.d("TAG155", all_movies.length()+" ");
         movies_array = get_all_movies();
 
         buffer = movies_array;
