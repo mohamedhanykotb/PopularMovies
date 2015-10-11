@@ -11,10 +11,14 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
+import android.view.Menu;
+import android.view.MenuInflater;
 
 import com.example.user.popularmovies.DATA.Movies_Contract;
 
@@ -27,6 +31,8 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+
+
 
 
 public class detail_fragment extends Fragment {
@@ -59,7 +65,7 @@ public class detail_fragment extends Fragment {
         details_list= (ListView) rootView.findViewById(R.id.details_list);
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        String current_Priority = sharedPreferences.getString("Priority",getString(R.string.popularity));
+        String current_Priority = sharedPreferences.getString("Priority", getString(R.string.popularity));
         if(current_Priority.equals(getString(R.string.favorites)) && arguments!=null)
         {
             Uri trailer_uri = Movies_Contract.TRAILERS.buildFavoritesUriById(arguments.getString("id"));
@@ -107,10 +113,10 @@ public class detail_fragment extends Fragment {
         details_list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String  trailer_key = trailers.get(position-1).getKey();
+                String trailer_key = trailers.get(position - 1).getKey();
                 try {
                     Intent intent = new Intent(Intent.ACTION_VIEW,
-                        Uri.parse("http://www.youtube.com/watch?v=" + trailer_key));
+                            Uri.parse("http://www.youtube.com/watch?v=" + trailer_key));
                     startActivity(intent);
                 } catch (ActivityNotFoundException ex) {
                     Log.d("unfounded URL", "unfounded URL");
@@ -119,28 +125,41 @@ public class detail_fragment extends Fragment {
         });
         return rootView;
     }
-    //@Override
-    //@TargetApi(11)
-    //public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-    //    inflater.inflate(R.menu.menue_detail_fragment, menu);
-    //    MenuItem menuItem = menu.findItem(R.id.action_bar_share);
-       // createShareForecastIntent();
-        //ShareActionProvider mShareActionProvider =(ShareActionProvider) MenuItemCompat.getActionProvider(menuItem);
-        //if (mShareActionProvider != null ) {
-         //   mShareActionProvider.setShareIntent(createShareForecastIntent());
-        //} else {
-        //    Log.d("Error Sharing", "Share Action Provider is null?");
-        //}
-    //}
-    private Intent createShareForecastIntent() {
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+
+        inflater.inflate(R.menu.menue_detail_fragment, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.action_share) {
+            String trailer_key=null;
+            if (trailers.size()>0)
+            {
+                trailer_key="http://www.youtube.com/watch?v="+trailers.get(0).getKey();
+                Intent ShareIntent =CreateShareIntent(trailer_key);
+                startActivity(ShareIntent);
+            }
+            else
+            {
+                Toast.makeText(getActivity(), "This Movie don't have any Trailer", Toast.LENGTH_LONG).show();
+            }
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private Intent CreateShareIntent(String trailer_key) {
         Intent shareIntent = new Intent(Intent.ACTION_SEND);
         shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
         shareIntent.setType("text/plain");
-        if(trailers.size()>0) {
-            shareIntent.putExtra(Intent.EXTRA_TEXT, "http://www.youtube.com/watch?v=" + trailers.get(0).getKey());
+            shareIntent.putExtra(Intent.EXTRA_TEXT, trailer_key);
+            Log.d("TAG", "createShareForecastIntent ");
             return shareIntent;
-        }
-        return null;
+
     }
 
     public class MoiesDataTask extends AsyncTask< String, Void ,String[] > {

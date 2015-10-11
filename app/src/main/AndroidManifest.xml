@@ -23,6 +23,11 @@
         <activity
             android:name=".detail"
             android:label="@string/title_activity_detail" >
+            android:parentActivityName=".MainActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.user.popularmovies.MainActivity"
+                />
         </activity>
 
         <activity
